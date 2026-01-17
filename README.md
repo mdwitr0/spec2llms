@@ -52,11 +52,14 @@ Download from [GitHub Releases](https://github.com/mdwitr0/spec2llms/releases).
 # From local file
 spec2llms ./openapi.json
 
-# From URL
-spec2llms https://petstore3.swagger.io/api/v3/openapi.json
+# From URL (use quotes)
+spec2llms "https://petstore3.swagger.io/api/v3/openapi.json"
 
 # With options
 spec2llms ./openapi.yaml -o ./docs -t "My API"
+
+# Skip validation for specs with minor issues
+spec2llms "https://api.example.com/openapi.json" --skip-validation
 ```
 
 ### Options
