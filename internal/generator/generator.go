@@ -572,7 +572,7 @@ func (g *Generator) generateCurlExample(ep parser.Endpoint) string {
 	path := ep.Path
 	for _, p := range ep.Parameters {
 		if p.In == "path" {
-			example := "{" + p.Name + "}"
+			var example string
 			if p.Example != nil {
 				example = fmt.Sprintf("%v", p.Example)
 			} else if p.Type == "integer" {
@@ -656,7 +656,7 @@ func (g *Generator) formatSecurityScheme(scheme parser.SecurityScheme) string {
 
 	switch scheme.Type {
 	case "apiKey":
-		sb.WriteString(fmt.Sprintf("- **Type**: API Key\n"))
+		sb.WriteString("- **Type**: API Key\n")
 		sb.WriteString(fmt.Sprintf("- **Parameter**: `%s`\n", scheme.ParamName))
 		sb.WriteString(fmt.Sprintf("- **In**: %s\n", scheme.In))
 	case "http":
