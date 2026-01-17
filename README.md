@@ -1,8 +1,29 @@
 # spec2llms
 
-CLI tool to generate [llms.txt](https://llmstxt.org/) files from OpenAPI 3.x specifications.
+[![CI](https://github.com/mdwitr0/spec2llms/actions/workflows/ci.yml/badge.svg)](https://github.com/mdwitr0/spec2llms/actions/workflows/ci.yml)
+[![Go Version](https://img.shields.io/github/go-mod/go-version/mdwitr0/spec2llms)](https://go.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-Creates LLM-friendly documentation for your API that AI agents can easily understand and use.
+**Generate [llms.txt](https://llmstxt.org/) from OpenAPI/Swagger specifications.**
+
+Transform your OpenAPI 3.x specs into LLM-friendly documentation that AI agents (ChatGPT, Claude, Cursor, Copilot, etc.) can easily understand and use to interact with your API.
+
+## Why llms.txt?
+
+- **AI-Native Documentation** — Optimized format for LLM consumption
+- **Better AI Integrations** — Help AI agents understand your API structure
+- **Auto-Generated** — No manual documentation writing
+- **Always Up-to-Date** — Generate from your OpenAPI spec on every build
+
+## Features
+
+- Parse OpenAPI 3.0/3.1 specifications (JSON & YAML)
+- Load specs from local files or remote URLs
+- Group endpoints by tags with clean file naming
+- Generate curl examples with authentication
+- Include request/response schemas
+- Support for `--skip-validation` for specs with minor issues
+- Multi-language support (English, Russian)
 
 ## Installation
 
@@ -39,6 +60,7 @@ spec2llms ./openapi.yaml -o ./docs -t "My API"
   -b, --base-url string   Base URL for API (overrides spec servers)
   -c, --config string     Config file (spec2llms.json)
   -l, --lang string       Output language: en, ru (default "en")
+      --skip-validation   Skip OpenAPI spec validation
   -v, --version           Print version
   -h, --help              Help
 ```
@@ -163,6 +185,22 @@ go test ./...
 ./spec2llms ./examples/petstore.json
 ```
 
+## Use Cases
+
+- **AI Agent Integration** — Provide context about your API to AI coding assistants
+- **Documentation for LLMs** — Create machine-readable API docs for ChatGPT plugins
+- **API Discovery** — Help AI tools understand available endpoints
+- **CI/CD Pipeline** — Auto-generate llms.txt on every release
+
+## Related
+
+- [llms.txt specification](https://llmstxt.org/) — Standard for LLM-friendly documentation
+- [OpenAPI Specification](https://www.openapis.org/) — API description format
+
 ## License
 
 MIT
+
+---
+
+**Keywords:** llms.txt, OpenAPI, Swagger, API documentation, LLM, AI agents, ChatGPT, Claude, Cursor, Copilot, API spec, openapi-to-llms, swagger-to-llms, AI-friendly docs, machine-readable API, llmstxt generator
