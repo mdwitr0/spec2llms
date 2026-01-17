@@ -1,6 +1,6 @@
 module github.com/mdwit/spec2llms
 
-go 1.25.4
+go 1.22.5
 
 require (
 	github.com/getkin/kin-openapi v0.133.0
