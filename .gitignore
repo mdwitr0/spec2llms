@@ -1,0 +1,26 @@
+# Binaries
+/spec2llms
+*.exe
+
+# Output directories
+/llms/
+/dist/
+/docs/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Claude
+.claude/
+CLAUDE.md
+
+# Test artifacts
+*.test
+coverage.out
+
+# OS
+.DS_Store
+Thumbs.db
