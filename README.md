@@ -27,15 +27,22 @@ Transform your OpenAPI 3.x specs into LLM-friendly documentation that AI agents 
 
 ## Installation
 
+### Homebrew (macOS/Linux)
+
+```bash
+brew tap mdwitr0/tap
+brew install spec2llms
+```
+
 ### From source
 
 ```bash
-go install github.com/mdwit/spec2llms/cmd/spec2llms@latest
+go install github.com/mdwitr0/spec2llms/cmd/spec2llms@latest
 ```
 
 ### Pre-built binaries
 
-Download from [GitHub Releases](https://github.com/mdwit/spec2llms/releases).
+Download from [GitHub Releases](https://github.com/mdwitr0/spec2llms/releases).
 
 ## Usage
 
