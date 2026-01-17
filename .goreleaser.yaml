@@ -46,6 +46,7 @@ brews:
   - repository:
       owner: mdwitr0
       name: homebrew-tap
+      token: "{{ .Env.HOMEBREW_TAP_GITHUB_TOKEN }}"
     homepage: "https://github.com/mdwitr0/spec2llms"
     description: "Generate llms.txt from OpenAPI/Swagger specifications"
     license: "MIT"
