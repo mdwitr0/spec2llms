@@ -41,3 +41,15 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^ci:'
+
+brews:
+  - repository:
+      owner: mdwitr0
+      name: homebrew-tap
+    homepage: "https://github.com/mdwitr0/spec2llms"
+    description: "Generate llms.txt from OpenAPI/Swagger specifications"
+    license: "MIT"
+    install: |
+      bin.install "spec2llms"
+    test: |
+      system "#{bin}/spec2llms", "--version"
