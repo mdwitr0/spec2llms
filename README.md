@@ -65,14 +65,15 @@ spec2llms "https://api.example.com/openapi.json" --skip-validation
 ### Options
 
 ```
-  -o, --output string     Output directory (default "./llms")
-  -t, --title string      API title (overrides spec title)
-  -b, --base-url string   Base URL for API (overrides spec servers)
-  -c, --config string     Config file (spec2llms.json)
-  -l, --lang string       Output language: en, ru (default "en")
-      --skip-validation   Skip OpenAPI spec validation
-  -v, --version           Print version
-  -h, --help              Help
+  -o, --output string          Output directory (default "./llms")
+  -t, --title string           API title (overrides spec title)
+  -b, --base-url string        Base URL for API (overrides spec servers)
+      --docs-base-url string   Base URL for documentation links (for LLM agents)
+  -c, --config string          Config file (spec2llms.json)
+  -l, --lang string            Output language: en, ru (default "en")
+      --skip-validation        Skip OpenAPI spec validation
+  -v, --version                Print version
+  -h, --help                   Help
 ```
 
 ### Config file
@@ -84,10 +85,13 @@ Create `spec2llms.json`:
   "source": "./openapi.json",
   "output": "./docs/llms",
   "baseUrl": "https://api.example.com",
+  "docsBaseUrl": "https://docs.example.com/llms",
   "title": "My API",
   "language": "en"
 }
 ```
+
+- `docsBaseUrl` — makes links absolute for LLM agents (e.g., `https://docs.example.com/llms/endpoints/users.txt` instead of `./endpoints/users.txt`)
 
 Run with config:
 

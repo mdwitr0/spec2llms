@@ -17,6 +17,7 @@ var (
 	output         string
 	title          string
 	baseURL        string
+	docsBaseURL    string
 	language       string
 	skipValidation bool
 )
@@ -35,6 +36,7 @@ func main() {
 	rootCmd.Flags().StringVarP(&output, "output", "o", "./llms", "output directory")
 	rootCmd.Flags().StringVarP(&title, "title", "t", "", "API title")
 	rootCmd.Flags().StringVarP(&baseURL, "base-url", "b", "", "base URL for API")
+	rootCmd.Flags().StringVar(&docsBaseURL, "docs-base-url", "", "base URL for documentation links (e.g., https://api.example.com)")
 	rootCmd.Flags().StringVarP(&language, "lang", "l", "en", "output language (en, ru)")
 	rootCmd.Flags().BoolVar(&skipValidation, "skip-validation", false, "skip OpenAPI spec validation")
 
@@ -97,6 +99,9 @@ func loadConfig(args []string) (*config.Config, error) {
 	}
 	if baseURL != "" {
 		cfg.BaseURL = baseURL
+	}
+	if docsBaseURL != "" {
+		cfg.DocsBaseURL = docsBaseURL
 	}
 	if language != "" {
 		cfg.Language = language

@@ -9,6 +9,7 @@ type Config struct {
 	Source         string `json:"source"`
 	Output         string `json:"output"`
 	BaseURL        string `json:"baseUrl"`
+	DocsBaseURL    string `json:"docsBaseUrl"`    // базовый URL для ссылок на документацию (llms.txt)
 	Title          string `json:"title"`
 	Language       string `json:"language"`
 	GroupBy        string `json:"groupBy"`        // tag, path

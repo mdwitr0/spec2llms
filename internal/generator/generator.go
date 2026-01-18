@@ -135,6 +135,12 @@ func (g *Generator) generateIndex(grouped map[string][]parser.Endpoint) string {
 	}
 	sort.Strings(tags)
 
+	// Формируем базовый путь для ссылок на документацию
+	linksBase := "./endpoints"
+	if g.cfg.DocsBaseURL != "" {
+		linksBase = strings.TrimSuffix(g.cfg.DocsBaseURL, "/") + "/endpoints"
+	}
+
 	for _, tag := range tags {
 		endpoints := grouped[tag]
 		filename := getEndpointBasedFilename(endpoints) + ".txt"
@@ -149,11 +155,11 @@ func (g *Generator) generateIndex(grouped map[string][]parser.Endpoint) string {
 		}
 
 		if tagDesc != "" {
-			sb.WriteString(fmt.Sprintf("- [%s](./endpoints/%s) — %s (%d endpoints)\n",
-				tag, filename, tagDesc, len(endpoints)))
+			sb.WriteString(fmt.Sprintf("- [%s](%s/%s) — %s (%d endpoints)\n",
+				tag, linksBase, filename, tagDesc, len(endpoints)))
 		} else {
-			sb.WriteString(fmt.Sprintf("- [%s](./endpoints/%s) — %d endpoints\n",
-				tag, filename, len(endpoints)))
+			sb.WriteString(fmt.Sprintf("- [%s](%s/%s) — %d endpoints\n",
+				tag, linksBase, filename, len(endpoints)))
 		}
 	}
 
