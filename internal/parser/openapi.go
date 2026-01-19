@@ -317,6 +317,54 @@ func convertSchema(s *openapi3.Schema) *Schema {
 		}
 	}
 
+	// Обрабатываем allOf — собираем все properties из всех схем
+	if len(s.AllOf) > 0 {
+		if schema.Properties == nil {
+			schema.Properties = make(map[string]*Schema)
+		}
+		for _, ref := range s.AllOf {
+			if ref.Value != nil {
+				merged := convertSchema(ref.Value)
+				if merged != nil {
+					// Копируем тип если не задан
+					if schema.Type == "" && merged.Type != "" {
+						schema.Type = merged.Type
+					}
+					// Копируем properties
+					for name, prop := range merged.Properties {
+						schema.Properties[name] = prop
+					}
+					// Копируем items если это массив
+					if merged.Items != nil && schema.Items == nil {
+						schema.Items = merged.Items
+					}
+				}
+			}
+		}
+	}
+
+	// Обрабатываем oneOf/anyOf — берём первую схему как пример
+	if len(s.OneOf) > 0 && len(schema.Properties) == 0 {
+		if s.OneOf[0].Value != nil {
+			first := convertSchema(s.OneOf[0].Value)
+			if first != nil {
+				schema.Type = first.Type
+				schema.Properties = first.Properties
+				schema.Items = first.Items
+			}
+		}
+	}
+	if len(s.AnyOf) > 0 && len(schema.Properties) == 0 {
+		if s.AnyOf[0].Value != nil {
+			first := convertSchema(s.AnyOf[0].Value)
+			if first != nil {
+				schema.Type = first.Type
+				schema.Properties = first.Properties
+				schema.Items = first.Items
+			}
+		}
+	}
+
 	// Конвертируем items для массивов
 	if s.Items != nil && s.Items.Value != nil {
 		schema.Items = convertSchema(s.Items.Value)
