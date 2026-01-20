@@ -277,6 +277,9 @@ func (g *Generator) generateEndpoint(ep parser.Endpoint) string {
 	return sb.String()
 }
 
+// maxNestedDepth — максимальная глубина раскрытия вложенных объектов
+const maxNestedDepth = 4
+
 func (g *Generator) generateSchemaDoc(schema *parser.Schema, depth int) string {
 	if schema == nil || depth > 4 {
 		return ""
@@ -286,7 +289,7 @@ func (g *Generator) generateSchemaDoc(schema *parser.Schema, depth int) string {
 
 	if schema.Type == "object" && len(schema.Properties) > 0 {
 		sb.WriteString("```json\n")
-		sb.WriteString(g.renderJSONSchema(schema, 0, depth))
+		sb.WriteString(g.renderJSONSchema(schema, 0, maxNestedDepth))
 		sb.WriteString("```\n\n")
 
 		// Добавляем описание полей в виде таблицы
@@ -638,7 +641,7 @@ func (g *Generator) generateCurlExample(ep parser.Endpoint) string {
 	if ep.RequestBody != nil && (ep.Method == "POST" || ep.Method == "PUT" || ep.Method == "PATCH") {
 		for _, media := range ep.RequestBody.Content {
 			if media.Schema != nil {
-				body := g.renderJSONSchema(media.Schema, 0, 2)
+				body := g.renderJSONSchema(media.Schema, 0, maxNestedDepth)
 				if body != "" {
 					sb.WriteString(" \\\n  -d '" + body + "'")
 				}
