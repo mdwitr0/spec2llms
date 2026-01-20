@@ -30,14 +30,14 @@ func (g *Generator) Generate() error {
 		return fmt.Errorf("failed to create output directory: %w", err)
 	}
 
-	// Группируем эндпоинты по тегам
-	grouped := g.groupByTags()
+	// Сортируем эндпоинты
+	endpoints := g.sortEndpoints()
 
-	// Генерируем файлы эндпоинтов
-	for tag, endpoints := range grouped {
-		filename := getEndpointBasedFilename(endpoints) + ".txt"
+	// Генерируем файл для каждого эндпоинта
+	for _, ep := range endpoints {
+		filename := g.getEndpointFilename(ep)
 		path := filepath.Join(endpointsDir, filename)
-		content := g.generateEndpointFile(tag, endpoints)
+		content := g.generateSingleEndpointFile(ep)
 		if err := os.WriteFile(path, []byte(content), 0644); err != nil {
 			return fmt.Errorf("failed to write %s: %w", path, err)
 		}
@@ -45,7 +45,7 @@ func (g *Generator) Generate() error {
 
 	// Генерируем индексный файл llms.txt
 	indexPath := filepath.Join(g.cfg.Output, "llms.txt")
-	indexContent := g.generateIndex(grouped)
+	indexContent := g.generateIndex(endpoints)
 	if err := os.WriteFile(indexPath, []byte(indexContent), 0644); err != nil {
 		return fmt.Errorf("failed to write llms.txt: %w", err)
 	}
@@ -53,30 +53,42 @@ func (g *Generator) Generate() error {
 	return nil
 }
 
-func (g *Generator) groupByTags() map[string][]parser.Endpoint {
-	grouped := make(map[string][]parser.Endpoint)
+// getEndpointFilename генерирует имя файла для endpoint'а
+func (g *Generator) getEndpointFilename(ep parser.Endpoint) string {
+	// GET /v1.4/person/search -> get-v1.4-person-search.txt
+	path := strings.TrimPrefix(ep.Path, "/")
+	path = strings.ReplaceAll(path, "/", "-")
+	path = strings.ReplaceAll(path, "{", "")
+	path = strings.ReplaceAll(path, "}", "")
+	return strings.ToLower(ep.Method) + "-" + path + ".txt"
+}
 
-	for _, ep := range g.api.Endpoints {
-		if len(ep.Tags) == 0 {
-			grouped["other"] = append(grouped["other"], ep)
-		} else {
-			for _, tag := range ep.Tags {
-				grouped[tag] = append(grouped[tag], ep)
-			}
+// sortEndpoints сортирует эндпоинты по пути и методу
+func (g *Generator) sortEndpoints() []parser.Endpoint {
+	endpoints := make([]parser.Endpoint, len(g.api.Endpoints))
+	copy(endpoints, g.api.Endpoints)
+
+	sort.Slice(endpoints, func(i, j int) bool {
+		if endpoints[i].Path == endpoints[j].Path {
+			return methodOrder(endpoints[i].Method) < methodOrder(endpoints[j].Method)
 		}
+		return endpoints[i].Path < endpoints[j].Path
+	})
+
+	return endpoints
+}
+
+// generateSingleEndpointFile генерирует содержимое файла для одного endpoint'а
+func (g *Generator) generateSingleEndpointFile(ep parser.Endpoint) string {
+	var sb strings.Builder
+
+	// Заголовок с тегом если есть
+	if len(ep.Tags) > 0 {
+		sb.WriteString("# " + ep.Tags[0] + "\n\n")
 	}
 
-	// Сортируем эндпоинты внутри каждой группы
-	for tag := range grouped {
-		sort.Slice(grouped[tag], func(i, j int) bool {
-			if grouped[tag][i].Path == grouped[tag][j].Path {
-				return methodOrder(grouped[tag][i].Method) < methodOrder(grouped[tag][j].Method)
-			}
-			return grouped[tag][i].Path < grouped[tag][j].Path
-		})
-	}
-
-	return grouped
+	sb.WriteString(g.generateEndpoint(ep))
+	return sb.String()
 }
 
 func methodOrder(method string) int {
@@ -87,7 +99,7 @@ func methodOrder(method string) int {
 	return 99
 }
 
-func (g *Generator) generateIndex(grouped map[string][]parser.Endpoint) string {
+func (g *Generator) generateIndex(endpoints []parser.Endpoint) string {
 	var sb strings.Builder
 
 	// Заголовок
@@ -128,66 +140,20 @@ func (g *Generator) generateIndex(grouped map[string][]parser.Endpoint) string {
 	// Список эндпоинтов
 	sb.WriteString("## Endpoints\n\n")
 
-	// Сортируем теги
-	tags := make([]string, 0, len(grouped))
-	for tag := range grouped {
-		tags = append(tags, tag)
-	}
-	sort.Strings(tags)
-
 	// Формируем базовый путь для ссылок на документацию
 	linksBase := "./endpoints"
 	if g.cfg.DocsBaseURL != "" {
 		linksBase = strings.TrimSuffix(g.cfg.DocsBaseURL, "/") + "/endpoints"
 	}
 
-	for _, tag := range tags {
-		endpoints := grouped[tag]
-		filename := getEndpointBasedFilename(endpoints) + ".txt"
-
-		// Находим описание тега
-		tagDesc := ""
-		for _, t := range g.api.Tags {
-			if t.Name == tag {
-				tagDesc = t.Description
-				break
-			}
+	for _, ep := range endpoints {
+		filename := g.getEndpointFilename(ep)
+		summary := ep.Summary
+		if summary == "" {
+			summary = ep.Path
 		}
-
-		if tagDesc != "" {
-			sb.WriteString(fmt.Sprintf("- [%s](%s/%s) — %s (%d endpoints)\n",
-				tag, linksBase, filename, tagDesc, len(endpoints)))
-		} else {
-			sb.WriteString(fmt.Sprintf("- [%s](%s/%s) — %d endpoints\n",
-				tag, linksBase, filename, len(endpoints)))
-		}
-	}
-
-	return sb.String()
-}
-
-func (g *Generator) generateEndpointFile(tag string, endpoints []parser.Endpoint) string {
-	var sb strings.Builder
-
-	// Заголовок
-	sb.WriteString("# " + tag + "\n\n")
-
-	// Находим описание тега
-	for _, t := range g.api.Tags {
-		if t.Name == tag {
-			if t.Description != "" {
-				sb.WriteString("> " + t.Description + "\n\n")
-			}
-			break
-		}
-	}
-
-	// Генерируем каждый эндпоинт
-	for i, ep := range endpoints {
-		if i > 0 {
-			sb.WriteString("\n---\n\n")
-		}
-		sb.WriteString(g.generateEndpoint(ep))
+		sb.WriteString(fmt.Sprintf("- [%s %s](%s/%s) — %s\n",
+			ep.Method, ep.Path, linksBase, filename, summary))
 	}
 
 	return sb.String()
@@ -519,48 +485,6 @@ func sanitizeFilename(name string) string {
 	name = strings.ReplaceAll(name, " ", "-")
 	name = strings.ReplaceAll(name, "/", "-")
 	return name
-}
-
-// getEndpointBasedFilename извлекает имя файла из путей эндпоинтов
-func getEndpointBasedFilename(endpoints []parser.Endpoint) string {
-	if len(endpoints) == 0 {
-		return "other"
-	}
-
-	// Берём первый эндпоинт (они уже отсортированы)
-	path := endpoints[0].Path
-
-	// Убираем начальный слеш и параметры пути {id}
-	path = strings.TrimPrefix(path, "/")
-
-	// Находим общий префикс для всех эндпоинтов группы
-	parts := strings.Split(path, "/")
-	if len(parts) == 0 {
-		return "root"
-	}
-
-	// Убираем параметры пути типа {id}
-	var cleanParts []string
-	for _, part := range parts {
-		if !strings.HasPrefix(part, "{") {
-			cleanParts = append(cleanParts, part)
-		}
-	}
-
-	if len(cleanParts) == 0 {
-		return "root"
-	}
-
-	// Берём первые 2 части пути (например, v1.4/movie)
-	maxParts := 2
-	if len(cleanParts) < maxParts {
-		maxParts = len(cleanParts)
-	}
-
-	result := strings.Join(cleanParts[:maxParts], "-")
-	result = strings.ToLower(result)
-
-	return result
 }
 
 func (g *Generator) generateCurlExample(ep parser.Endpoint) string {

@@ -84,9 +84,14 @@ func TestGenerate(t *testing.T) {
 		t.Error("endpoints directory not created")
 	}
 
-	usersFile := filepath.Join(endpointsDir, "users.txt")
-	if _, err := os.Stat(usersFile); os.IsNotExist(err) {
-		t.Error("users.txt not created")
+	// Проверяем что файлы для каждого endpoint созданы
+	getUsersFile := filepath.Join(endpointsDir, "get-users.txt")
+	if _, err := os.Stat(getUsersFile); os.IsNotExist(err) {
+		t.Error("get-users.txt not created")
+	}
+	postUsersFile := filepath.Join(endpointsDir, "post-users.txt")
+	if _, err := os.Stat(postUsersFile); os.IsNotExist(err) {
+		t.Error("post-users.txt not created")
 	}
 
 	// Проверяем содержимое llms.txt
@@ -111,8 +116,11 @@ func TestGenerate(t *testing.T) {
 	if !strings.Contains(content, "X-API-Key") {
 		t.Error("llms.txt missing API key info")
 	}
-	if !strings.Contains(content, "[users](./endpoints/users.txt)") {
-		t.Error("llms.txt missing users link")
+	if !strings.Contains(content, "[GET /users](./endpoints/get-users.txt)") {
+		t.Error("llms.txt missing GET /users link")
+	}
+	if !strings.Contains(content, "[POST /users](./endpoints/post-users.txt)") {
+		t.Error("llms.txt missing POST /users link")
 	}
 }
 
